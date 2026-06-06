@@ -1,0 +1,33 @@
+<web-app
+xmlns="https://jakarta.ee/xml/ns/jakartaee"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="
+https://jakarta.ee/xml/ns/jakartaee
+https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+version="6.0">
+
+    <servlet>
+
+        <servlet-name>
+            MatchServlet
+        </servlet-name>
+
+        <servlet-class>
+            MatchServlet
+        </servlet-class>
+
+    </servlet>
+
+    <servlet-mapping>
+
+        <servlet-name>
+            MatchServlet
+        </servlet-name>
+
+        <url-pattern>
+            /match
+        </url-pattern>
+
+    </servlet-mapping>
+
+</web-app>

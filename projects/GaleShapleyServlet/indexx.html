@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stable Match System | Gale-Shapley Algorithm</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== LANDING PAGE IMPROVED ===== */
+        .landing-page {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .hero-box {
+            width: 100%;
+            max-width: 1300px;
+            background: rgba(255, 117, 173, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 50px 60px;
+            display: flex;
+            gap: 60px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .hero-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .hero-left {
+            flex: 1.2;
+            min-width: 300px;
+        }
+
+        .hero-left h1 {
+            font-size: 56px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #ffe0f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-left p {
+            font-size: 17px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        .highlight {
+            color: #ffe4f0;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .start-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: white;
+            color: #ff4f95;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            background: #ffe4f0;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .hero-right {
+             flex: 0.9;
+             min-width: 420px;
+             display: flex;
+             flex-direction: column;
+             gap: 20px;
+             justify-content: flex-start;
+        }
+
+        .algorithm-card {
+            background: rgba(255, 142, 188, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 30px;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .algorithm-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 142, 188, 1);
+        }
+
+        .algorithm-card h2 {
+            margin-bottom: 18px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .algorithm-card p {
+            line-height: 1.6;
+            font-size: 15px;
+            margin-bottom: 15px;
+            opacity: 0.95;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.95);
+            color: #ff4f95;
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 40px;
+            margin: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .tag:hover {
+            transform: scale(1.05);
+            background: white;
+        }
+
+        /* ===== POPUP MODAL ===== */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .popup-box {
+            background: linear-gradient(135deg, #ffffff, #fff5f8);
+            color: #333;
+            width: 90%;
+            max-width: 500px;
+            padding: 35px;
+            border-radius: 28px;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: popupFadeIn 0.3s ease;
+        }
+
+        @keyframes popupFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .popup-box h2 {
+            margin-bottom: 18px;
+            color: #ff4f95;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .popup-box p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .check-group {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            font-size: 15px;
+            background: #f5f5f5;
+            padding: 12px 15px;
+            border-radius: 16px;
+        }
+
+        .check-group input {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #ff4f95;
+        }
+
+        .check-group span {
+            color: #444;
+            line-height: 1.5;
+        }
+
+        #continueBtn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 50px;
+            background: #ff4f95;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #continueBtn:hover:not(:disabled) {
+            background: #ff3366;
+            transform: translateY(-2px);
+        }
+
+        #continueBtn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #999;
+            transition: 0.2s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            color: #ff4f95;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1000px) {
+            .hero-box {
+                padding: 35px 40px;
+                gap: 40px;
+            }
+            
+            .hero-left h1 {
+                font-size: 44px;
+            }
+            
+            .hero-left p {
+                font-size: 15px;
+            }
+            
+            .algorithm-card h2 {
+                font-size: 24px;
+            }
+            
+            .algorithm-card p {
+                font-size: 14px;
+            }
+            
+            .start-btn {
+                padding: 12px 28px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .landing-page {
+                padding: 20px;
+            }
+            
+            .hero-box {
+                flex-direction: column;
+                text-align: center;
+                padding: 30px 25px;
+            }
+            
+            .hero-left h1 {
+                font-size: 36px;
+            }
+            
+            .hero-left p {
+                font-size: 14px;
+            }
+            
+            .algorithm-card {
+                text-align: center;
+            }
+            
+            .popup-box {
+                padding: 25px;
+                margin: 20px;
+            }
+            
+            .popup-box h2 {
+                font-size: 22px;
+            }
+            
+            .check-group {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-left h1 {
+                font-size: 28px;
+            }
+            
+            .hero-box {
+                padding: 25px 20px;
+            }
+            
+            .start-btn {
+                padding: 10px 24px;
+                font-size: 15px;
+            }
+            
+            .tag {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- POPUP MODAL -->
+    <div class="overlay" id="popup">
+        <div class="popup-box">
+            <span class="close-btn" onclick="closePopup()">×</span>
+            <h2>
+                <span>⚠️</span> Terms & Conditions
+            </h2>
+            <p>
+                By using this Stable Match System, you agree to participate responsibly
+                and understand that this simulation is intended for educational purposes only.
+                The Gale-Shapley algorithm demonstrates stable matching concepts in a
+                controlled simulation environment.
+            </p>
+            <label class="check-group">
+                <input type="checkbox" id="agreeBox">
+                <span>I understand the Gale-Shapley Algorithm simulation and agree to continue.</span>
+            </label>
+            <button id="continueBtn" disabled onclick="continueSite()">
+                Confirm & Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- LANDING PAGE -->
+    <div class="landing-page">
+        <div class="hero-box">
+            <div class="hero-left">
+                <h1>
+                    💘 Stable Match<br>System
+                </h1>
+                <p>
+                    An interactive simulation system that demonstrates how the
+                    <span class="highlight">Gale-Shapley Stable Matching Algorithm</span>
+                    works in pairing two groups based on personality preferences.
+                </p>
+                <p>
+                    Inspired by modern matching systems like Omegle and dating apps,
+                    this project visualizes how stable pairs are formed without
+                    conflicts or unstable matches.
+                </p>
+                <a href="app.html" class="start-btn">
+                    🚀 Start Simulation
+                </a>
+            </div>
+            <div class="hero-right">
+                <div class="algorithm-card">
+                    <h2>
+                        🧠 About the Algorithm
+                    </h2>
+                    <p>
+                        The Gale-Shapley Algorithm is a famous algorithm used to solve
+                        the Stable Marriage Problem, first published in 1962 by David Gale
+                        and Lloyd Shapley.
+                    </p>
+                    <p>
+                        One group proposes while the other group accepts or rejects
+                        proposals based on preferences until stable matches are formed.
+                        The result is always stable and optimal for the proposing group.
+                    </p>
+                    <div>
+                        <span class="tag">✨ Stable Matching</span>
+                        <span class="tag">💌 Proposals</span>
+                        <span class="tag">📊 Preferences</span>
+                        <span class="tag">🔄 Simulation</span>
+                    </div>
+                </div>
+                <div class="algorithm-card">
+    <h2>👩‍💻 About the Developers</h2>
+
+    <p>
+        This project was developed by BSIT students as an educational
+        simulation of the Gale-Shapley Stable Matching Algorithm.
+    </p>
+
+    <p>
+        <strong>Developers</strong><br>
+        Brian Anthony C. Maglinao<br>
+        Abdul Ladjes Kusain
+    </p>
+
+    <p>
+        <strong>Members</strong><br>
+        Rusell Greg Ortega<br>
+        Joshua Jim Ibabao<br>
+        Arold Paolo Tacumba
+    </p>
+
+    <p>
+        <strong>Program</strong><br>
+        Bachelor of Science in Information Technology (BSIT-2E)
+    </p>
+
+    <div>
+        <span class="tag">👨‍💻 Developers</span>
+        <span class="tag">🎓 BSIT-2E</span>
+        <span class="tag">💻 IT221</span>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const agreeBox = document.getElementById("agreeBox");
+        const continueBtn = document.getElementById("continueBtn");
+
+        agreeBox.addEventListener("change", () => {
+            continueBtn.disabled = !agreeBox.checked;
+        });
+
+        function continueSite() {
+            if (agreeBox.checked) {
+                document.getElementById("popup").style.display = "none";
+            }
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation - Match Matrix</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .sim-body {
+            background: linear-gradient(135deg, #ff5ea8, #ff78b5, #ff9acd);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .timeline-panel,
+        .visual-panel,
+        .matches-panel {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            background: linear-gradient(135deg, #fff, #ffe0f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 50px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tab-btn.active {
+            background: #ff4f95;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chat-container {
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #ff4f95;
+            border-radius: 10px;
+        }
+
+        .chat-message {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            line-height: 1.4;
+            border-left: 3px solid #ff4f95;
+        }
+
+        .round-badge {
+            display: inline-block;
+            background: #ff4f95;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .proposal-message { border-left-color: #ffa500; }
+        .accept-message { border-left-color: #00ff88; }
+        .reject-message { border-left-color: #ff4444; }
+        .replace-message { border-left-color: #ffaa00; }
+        .info-message { border-left-color: #4488ff; }
+        .match-made-message { border-left-color: #ffd700; }
+
+        .visual-box {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .avatar-card {
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .visual-profile {
+            font-size: 50px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .avatar-card h2 {
+            font-size: 16px;
+            margin-top: 8px;
+            word-break: break-word;
+        }
+
+        .heart {
+            font-size: 35px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .status-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff4f95, #ff8bc2);
+            border-radius: 10px;
+            transition: 0.5s;
+        }
+
+        .matches-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .final-match-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 10px;
+            transition: 0.3s;
+            animation: slideInMatch 0.4s ease;
+        }
+
+        @keyframes slideInMatch {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .final-match-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .final-match-profiles {
+            font-size: 35px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .final-match-card h3 {
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .final-match-card p {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .empty-matches {
+            text-align: center;
+            padding: 30px 20px;
+            opacity: 0.7;
+            font-size: 13px;
+        }
+
+        @media (max-width: 1000px) {
+            .dashboard { grid-template-columns: 1fr; gap: 15px; }
+            .visual-box { flex-direction: row; }
+            .chat-container { max-height: 250px; }
+        }
+
+        @media (max-width: 600px) {
+            .sim-body { padding: 10px; }
+            .visual-profile { width: 60px; height: 60px; font-size: 35px; }
+            .heart { font-size: 25px; }
+            .avatar-card h2 { font-size: 12px; }
+            .panel-header { font-size: 18px; }
+        }
+    </style>
+</head>
+
+<body class="sim-body">
+    <div class="dashboard">
+        <div class="timeline-panel">
+            <div class="panel-header">💬 Algorithm Simulation</div>
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="switchTab('chat')">💬 Dramatic</button>
+                <button class="tab-btn" onclick="switchTab('steps')">📋 Technical</button>
+            </div>
+            <div id="chatTab" class="tab-content active">
+                <div id="chatLog" class="chat-container"></div>
+            </div>
+            <div id="stepsTab" class="tab-content">
+                <div id="stepsLog" class="chat-container"></div>
+            </div>
+        </div>
+
+        <div class="visual-panel">
+            <div class="panel-header">💖 Current Interaction</div>
+            <div class="visual-box">
+                <div class="avatar-card">
+                    <div id="boyProfile" class="visual-profile">👦</div>
+                    <h2 id="boyDisplay">Ready</h2>
+                </div>
+                <div class="heart">💌</div>
+                <div class="avatar-card">
+                    <div id="girlProfile" class="visual-profile">👧</div>
+                    <h2 id="girlDisplay">Ready</h2>
+                </div>
+            </div>
+            <div id="statusBox" class="status-box">✨ Ready to start ✨</div>
+            <div class="progress-container">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="matches-panel">
+            <div class="panel-header">💘 Final Matches</div>
+            <div id="matchesContainer" class="matches-container">
+                <div class="empty-matches">💞 Waiting for matches... 💞</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.switchTab = function(tab) {
+            let chatTab = document.getElementById("chatTab");
+            let stepsTab = document.getElementById("stepsTab");
+            let btns = document.querySelectorAll(".tab-btn");
+            btns.forEach(btn => btn.classList.remove("active"));
+            if (tab === 'chat') {
+                chatTab.classList.add("active");
+                stepsTab.classList.remove("active");
+                btns[0].classList.add("active");
+            } else {
+                chatTab.classList.remove("active");
+                stepsTab.classList.add("active");
+                btns[1].classList.add("active");
+            }
+        };
+
+        const dramaticMessages = {
+            propose: [
+                "💘 {boy} nervously approaches {girl} with a bouquet...",
+                "💌 '{girl}, will you be mine?' asks {boy}.",
+                "✨ {boy} confesses feelings to {girl}.",
+                "🌹 {boy} gets down on one knee for {girl}!",
+                "💕 '{girl}, you're my dream come true!' says {boy}."
+            ],
+            accept: [
+                "😊 '{boy}, yes!' {girl} blushes happily.",
+                "💖 {girl} accepts {boy}'s proposal!",
+                "🌸 '{boy}, I've been waiting for you!' {girl} smiles.",
+                "💍 {girl} says YES to {boy}!",
+                "🥰 {girl} embraces {boy} - it's a match!"
+            ],
+            reject: [
+                "😔 '{boy}, I'm sorry...' {girl} says softly.",
+                "💔 {girl} gently rejects {boy}.",
+                "😢 'We're not compatible, {boy}.' {girl} replies.",
+                "💧 '{boy}, my heart belongs to another.' {girl} explains."
+            ],
+            replace: [
+                "🔄 {girl} changes her mind for {newBoy}!",
+                "⚡ '{newBoy} is my true match!' {girl} declares.",
+                "💫 {girl} chooses {newBoy} over {oldBoy}.",
+                "😲 Dramatic twist! {girl} picks {newBoy} instead!"
+            ]
+        };
+
+        function getDramaticMessage(type, vars) {
+            let messages = dramaticMessages[type];
+            if (!messages) return `${type} message`;
+            let msg = messages[Math.floor(Math.random() * messages.length)];
+            for (let key in vars) {
+                msg = msg.split(`{${key}}`).join(vars[key]);
+            }
+            return msg;
+        }
+
+        function getTechnicalMessage(type, boy, girl, oldBoy, priority, total) {
+            switch (type) {
+                case 'propose': return `PROPOSAL: ${boy} → ${girl} (Choice ${priority}/${total})`;
+                case 'accept': return `ACCEPT: ${girl} accepts ${boy} → NEW MATCH FORMED`;
+                case 'reject': return `REJECT: ${girl} rejects ${boy} → ${boy} remains free`;
+                case 'replace': return `REPLACE: ${girl} prefers ${boy} over ${oldBoy} → ${oldBoy} is now free`;
+                default: return `${type}: ${boy}/${girl}`;
+            }
+        }
+
+        window.onload = function() {
+            let data = JSON.parse(localStorage.getItem("matchingData"));
+
+            if (!data) {
+                alert("No data found. Please go back and click 'Initialize Matching'.");
+                return;
+            }
+
+            let chatLog = document.getElementById("chatLog");
+            let stepsLog = document.getElementById("stepsLog");
+            let matchesContainer = document.getElementById("matchesContainer");
+            let boyDisplay = document.getElementById("boyDisplay");
+            let girlDisplay = document.getElementById("girlDisplay");
+            let boyProfile = document.getElementById("boyProfile");
+            let girlProfile = document.getElementById("girlProfile");
+            let statusBox = document.getElementById("statusBox");
+            let progressBar = document.getElementById("progressBar");
+
+            if (chatLog) chatLog.innerHTML = "";
+            if (stepsLog) stepsLog.innerHTML = "";
+
+            let boyMap = {}, girlMap = {};
+            if (data.boys) data.boys.forEach(b => boyMap[b.name] = b.profile || "👦");
+            if (data.girls) data.girls.forEach(g => girlMap[g.name] = g.profile || "👧");
+
+            // Track current matches for real-time display
+            let currentMatches = [];
+
+            function updateMatchesDisplay() {
+                if (!matchesContainer) return;
+                
+                if (currentMatches.length === 0) {
+                    matchesContainer.innerHTML = '<div class="empty-matches">💞 No matches yet... 💞</div>';
+                    return;
+                }
+                
+                matchesContainer.innerHTML = "";
+                currentMatches.forEach((match, i) => {
+                    let card = document.createElement("div");
+                    card.className = "final-match-card";
+                    card.style.animation = `slideInMatch 0.4s ease ${i * 0.1}s backwards`;
+                    card.innerHTML = `
+                        <div class="final-match-profiles">
+                            <span>${match.boyProfile || "👦"}</span>
+                            <span>💖</span>
+                            <span>${match.girlProfile || "👧"}</span>
+                        </div>
+                        <h3>${match.boy} & ${match.girl}</h3>
+                        <p>✨ Stable Match ✨</p>
+                    `;
+                    matchesContainer.appendChild(card);
+                });
+                matchesContainer.scrollTop = matchesContainer.scrollHeight;
+            }
+
+            function addMatchToDisplay(boy, girl, boyProfileIcon, girlProfileIcon) {
+                let exists = currentMatches.some(m => m.boy === boy && m.girl === girl);
+                if (!exists) {
+                    currentMatches.push({
+                        boy: boy,
+                        girl: girl,
+                        boyProfile: boyProfileIcon,
+                        girlProfile: girlProfileIcon
+                    });
+                    updateMatchesDisplay();
+                    
+                    addChatMessage("💖", `✨ MATCH MADE! ${boy} 💖 ${girl} are now together! ✨`, "match-made");
+                    addStepMessage("💖", `✨ MATCH: ${boy} and ${girl} are now paired`, "accept");
+                }
+            }
+
+            function removeMatch(boyName) {
+                let index = currentMatches.findIndex(m => m.boy === boyName);
+                if (index !== -1) {
+                    currentMatches.splice(index, 1);
+                    updateMatchesDisplay();
+                    addChatMessage("🔄", `${boyName} is now free again!`, "replace");
+                }
+            }
+
+            function addChatMessage(round, message, type) {
+                if (!chatLog) return;
+                let colorClass = 'proposal-message';
+                if (type === 'accept') colorClass = 'accept-message';
+                if (type === 'reject') colorClass = 'reject-message';
+                if (type === 'replace') colorClass = 'replace-message';
+                if (type === 'info') colorClass = 'info-message';
+                if (type === 'match-made') colorClass = 'match-made-message';
+
+                let div = document.createElement("div");
+                div.className = `chat-message ${colorClass}`;
+                div.innerHTML = `<span class="round-badge">${round}</span> ${message}`;
+                chatLog.appendChild(div);
+                div.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            function addStepMessage(round, message, type) {
+                if (!stepsLog) return;
+                let colorClass = 'proposal-message';
+                if (type === 'accept') colorClass = 'accept-message';
+                if (type === 'reject') colorClass = 'reject-message';
+                if (type === 'replace') colorClass = 'replace-message';
+
+                let div = document.createElement("div");
+                div.className = `chat-message ${colorClass}`;
+                div.innerHTML = `<span class="round-badge">${round}</span> ${message}`;
+                stepsLog.appendChild(div);
+            }
+
+            function updateVisuals(boy, girl, status) {
+                if (boy && boyMap[boy]) {
+                    boyProfile.innerText = boyMap[boy];
+                    boyDisplay.innerText = boy;
+                }
+                if (girl && girlMap[girl]) {
+                    girlProfile.innerText = girlMap[girl];
+                    girlDisplay.innerText = girl;
+                }
+                statusBox.innerHTML = status;
+            }
+
+            function updateProgress(current, total) {
+                if (progressBar) progressBar.style.width = `${(current / total) * 100}%`;
+            }
+
+            // Run Gale-Shapley and collect steps
+            let boys = data.boys.map(b => ({
+                name: b.name,
+                prefs: b.preferences || [],
+                profile: b.profile,
+                index: 0,
+                match: null
+            }));
+
+            let girls = data.girls.map(g => ({
+                name: g.name,
+                prefs: g.preferences || [],
+                profile: g.profile,
+                match: null
+            }));
+
+            let free = [...boys];
+            let steps = [];
+            let round = 1;
+
+            while (free.length > 0 && round < 100) {
+                let boy = free.shift();
+                if (!boy || boy.index >= boy.prefs.length) continue;
+
+                let girlName = boy.prefs[boy.index];
+                let girl = girls.find(g => g.name === girlName);
+                let currentPriority = boy.index + 1;
+                let totalPrefs = boy.prefs.length;
+                boy.index++;
+
+                if (!girl) continue;
+
+                steps.push({
+                    round, type: 'propose', boy: boy.name, girl: girl.name,
+                    priority: currentPriority, total: totalPrefs
+                });
+
+                if (!girl.match) {
+                    girl.match = boy;
+                    boy.match = girl;
+                    steps.push({ round, type: 'accept', boy: boy.name, girl: girl.name });
+                } else {
+                    let current = girl.match;
+                    let currentRank = girl.prefs.indexOf(current.name);
+                    let newRank = girl.prefs.indexOf(boy.name);
+                    if (newRank < currentRank && newRank !== -1) {
+                        steps.push({ round, type: 'replace', boy: boy.name, girl: girl.name, oldBoy: current.name });
+                        current.match = null;
+                        free.push(current);
+                        girl.match = boy;
+                        boy.match = girl;
+                    } else {
+                        steps.push({ round, type: 'reject', boy: boy.name, girl: girl.name });
+                        free.push(boy);
+                    }
+                }
+                round++;
+            }
+
+            // Welcome messages
+            addChatMessage("✨", "🌟 Welcome to Match Matrix! 🌟", "info");
+            addChatMessage("💡", "💡 Watch matches appear ONE BY ONE as they happen!", "info");
+            addStepMessage("📌", "📌 Gale-Shapley Algorithm Started", "info");
+            addStepMessage("📌", `📌 ${boys.length} suitors, ${girls.length} selectors`, "info");
+
+            let stepIdx = 0;
+
+            function nextStep() {
+                if (stepIdx >= steps.length) {
+                    statusBox.innerHTML = "✅ MATCHING COMPLETE! All participants are happily paired! ✅";
+                    updateProgress(steps.length, steps.length);
+                    addChatMessage("🎉", "🎉🎉🎉 ALL MATCHES ARE STABLE! 🎉🎉🎉", "accept");
+                    addStepMessage("🏁", "🏁 Algorithm Complete - All matches are stable", "accept");
+                    return;
+                }
+
+                let step = steps[stepIdx];
+                updateProgress(stepIdx + 1, steps.length);
+
+                if (step.type === 'propose') {
+                    let chatMsg = getDramaticMessage('propose', { boy: step.boy, girl: step.girl });
+                    addChatMessage(step.round, chatMsg, 'propose');
+                    let techMsg = getTechnicalMessage('propose', step.boy, step.girl, null, step.priority, step.total);
+                    addStepMessage(step.round, techMsg, 'propose');
+                    updateVisuals(step.boy, step.girl, "💌 Proposing...");
+                } 
+                else if (step.type === 'accept') {
+                    let chatMsg = getDramaticMessage('accept', { boy: step.boy, girl: step.girl });
+                    addChatMessage(step.round, chatMsg, 'accept');
+                    let techMsg = getTechnicalMessage('accept', step.boy, step.girl, null, null, null);
+                    addStepMessage(step.round, techMsg, 'accept');
+                    updateVisuals(step.boy, step.girl, "💖 ACCEPTED! New couple formed! 💖");
+                    
+                    // 🔥 THIS IS WHERE MATCH APPEARS IMMEDIATELY 🔥
+                    addMatchToDisplay(step.boy, step.girl, boyMap[step.boy], girlMap[step.girl]);
+                } 
+                else if (step.type === 'reject') {
+                    let chatMsg = getDramaticMessage('reject', { boy: step.boy, girl: step.girl });
+                    addChatMessage(step.round, chatMsg, 'reject');
+                    let techMsg = getTechnicalMessage('reject', step.boy, step.girl, null, null, null);
+                    addStepMessage(step.round, techMsg, 'reject');
+                    updateVisuals(step.boy, step.girl, "💔 REJECTED");
+                } 
+                else if (step.type === 'replace') {
+                    let chatMsg = getDramaticMessage('replace', { girl: step.girl, newBoy: step.boy, oldBoy: step.oldBoy });
+                    addChatMessage(step.round, chatMsg, 'replace');
+                    let techMsg = getTechnicalMessage('replace', step.boy, step.girl, step.oldBoy, null, null);
+                    addStepMessage(step.round, techMsg, 'replace');
+                    updateVisuals(step.boy, step.girl, "🔄 NEW MATCH! Previous match released.");
+                    
+                    // 🔥 REMOVE OLD MATCH, ADD NEW MATCH IMMEDIATELY 🔥
+                    removeMatch(step.oldBoy);
+                    addMatchToDisplay(step.boy, step.girl, boyMap[step.boy], girlMap[step.girl]);
+                }
+
+                stepIdx++;
+                setTimeout(nextStep, 1600);
+            }
+
+            setTimeout(nextStep, 800);
+        };
+    </script>
+</body>
+
+</html>

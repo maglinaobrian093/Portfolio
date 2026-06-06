@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Matrix | Stable Matching Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff4f95;
+            border-radius: 10px;
+        }
+
+        /* ===== PERSONALITY GROUP ===== */
+        .personality-group {
+            margin: 12px 0 8px 0;
+        }
+        .personality-group label {
+            font-size: 11px;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+        .trait-select {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 12px;
+            font-size: 13px;
+            background: white;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .trait-select:hover {
+            transform: scale(1.01);
+        }
+
+        /* ===== LIKES GROUP ===== */
+        .likes-group {
+            margin: 10px 0 5px 0;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .checkbox-group label:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+        .checkbox-group input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: #ff4f95;
+        }
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            margin: 8px 0 4px 0;
+            color: rgba(255,255,255,0.9);
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== BUTTON GROUP ===== */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .randomize-btn, .clear-btn, .breakdown-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s ease;
+        }
+        .randomize-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+        .clear-btn:hover {
+            background: rgba(255,100,100,0.4);
+            transform: translateY(-1px);
+        }
+        .breakdown-btn {
+            background: rgba(100,100,255,0.2);
+        }
+        .breakdown-btn:hover {
+            background: rgba(100,100,255,0.35);
+            transform: translateY(-1px);
+        }
+
+        /* ===== PROFILE GROUP ===== */
+        .profile-group {
+            margin: 12px 0 8px 0;
+        }
+        .profile-group label {
+            font-size: 11px;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .profile-select {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 12px;
+            font-size: 13px;
+            background: white;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* ===== START BUTTON ===== */
+        .start-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #ffffff, #ffe0f0);
+            color: #ff4f95;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* ===== GLASS PANEL ===== */
+        .glass-panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        .glass-panel:hover {
+            transform: translateY(-3px);
+        }
+        .glass-panel h2 {
+            margin-bottom: 15px;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #fff, #ffe0f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        /* ===== USER CARD ===== */
+        .user-card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .user-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.1);
+        }
+        .user-card input {
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            transition: all 0.2s ease;
+        }
+        .user-card input:focus {
+            box-shadow: 0 0 0 2px rgba(255,79,149,0.3);
+        }
+        .user-card input::placeholder {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        /* ===== MAIN GRID ===== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 300px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff, #ffe0f0, #ffb6d5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .hero p {
+            font-size: 16px;
+            opacity: 0.85;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            position: relative;
+            z-index: 2;
+            width: 92%;
+            max-width: 1400px;
+            margin: auto;
+            padding: 30px 0;
+        }
+
+        /* ===== BODY BACKGROUND ===== */
+        body {
+            background: radial-gradient(circle at 0% 0%, #ff8bc2, #ff5f9e 50%, #ff3d87);
+            min-height: 100vh;
+            color: white;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* ===== FLOATING CIRCLES ===== */
+        .background-circle {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.35;
+            z-index: 0;
+            animation: float 15s infinite ease-in-out;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-20px) translateX(10px); }
+            100% { transform: translateY(0px) translateX(0px); }
+        }
+        .circle1 { width: 300px; height: 300px; background: #ffb6d5; top: -100px; left: -100px; }
+        .circle2 { width: 350px; height: 350px; background: #ff6fae; bottom: -120px; right: -100px; }
+        .circle3 { width: 200px; height: 200px; background: #ffc7de; top: 50%; left: 20%; }
+
+        /* ===== TAGS ===== */
+        .tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.85);
+            color: #ff4f95;
+            padding: 4px 12px;
+            border-radius: 30px;
+            margin: 4px 3px;
+            font-weight: 600;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+        .tag:hover {
+            transform: scale(1.03);
+            background: white;
+        }
+
+        /* ===== MODAL STYLES ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #2a2a3a, #1a1a2a);
+            margin: auto;
+            padding: 0;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 480px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            animation: modalFadeIn 0.25s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            background: rgba(255,79,149,0.12);
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-body {
+            padding: 15px;
+            max-height: 55vh;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .modal-footer {
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+        }
+        .modal-close {
+            background: #ff4f95;
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-close:hover {
+            transform: scale(1.02);
+            background: #ff3366;
+        }
+
+        /* ===== COMPATIBILITY CARD STYLES ===== */
+        .compat-card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        .compat-header {
+            font-weight: 600;
+            margin-bottom: 6px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+        }
+        .compat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .compat-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 80px;
+            font-size: 12px;
+        }
+        .compat-score {
+            font-weight: 600;
+            min-width: 50px;
+            text-align: center;
+        }
+        .compat-traits {
+            font-size: 10px;
+            color: #bbb;
+            flex: 1;
+            text-align: right;
+        }
+        .match-trait {
+            color: #a5f0c0;
+        }
+        .score-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .score-high { background: #00cc66; color: white; }
+        .score-medium { background: #ffaa00; color: white; }
+        .score-low { background: #ff4444; color: white; }
+        .section-divider {
+            background: rgba(255,255,255,0.08);
+            padding: 6px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 12px 0 10px 0;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        /* ===== INFO PANEL TEXT ===== */
+        .info-text {
+            font-size: 12px;
+            line-height: 1.5;
+            opacity: 0.85;
+            margin-bottom: 15px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1000px) {
+            .main-grid { grid-template-columns: 1fr; gap: 16px; }
+            .hero h1 { font-size: 38px; }
+            .hero p { font-size: 14px; }
+            .container { padding: 20px 0; width: 95%; }
+            .glass-panel { padding: 16px; }
+            .glass-panel h2 { font-size: 20px; }
+        }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 28px; }
+            .checkbox-group label { padding: 4px 10px; font-size: 11px; }
+            .button-group { gap: 6px; }
+            .randomize-btn, .clear-btn, .breakdown-btn { padding: 6px 10px; font-size: 11px; }
+            .start-btn { font-size: 14px; padding: 10px; }
+            .user-card { padding: 12px; }
+            .user-card input { padding: 8px 12px; font-size: 13px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-circle circle1"></div>
+    <div class="background-circle circle2"></div>
+<div class="background-circle circle3"></div>
+
+    <div class="container">
+        <div class="hero">
+            <h1>💘 MATCH MATRIX</h1>
+            <p>Dynamic Stable Matching Simulation</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- GROUP A -->
+            <div class="glass-panel">
+                <h2>👦 Group A</h2>
+                <div class="user-card">
+                    <input type="text" id="boy1" placeholder="Name">
+                    <div class="profile-group">
+                        <label>👤 Avatar</label>
+                        <select class="profile-select" id="boy1profile">
+                            <option value="👦">👦 Boy</option>
+                            <option value="🐉">🐉 Dragon</option>
+                            <option value="🦁">🦁 Lion</option>
+                            <option value="🐺">🐺 Wolf</option>
+                            <option value="🦅">🦅 Eagle</option>
+                            <option value="🐻">🐻 Bear</option>
+                            <option value="🐍">🐍 Snake</option>
+                        </select>
+                    </div>
+                    <div class="personality-group">
+                        <label>🎭 My Traits (3)</label>
+                        <select class="trait-select" id="boy1trait1">
+                            <option>Cat Lover</option><option>Night Owl</option><option>Ai Reliant</option>
+                            <option>Brave</option><option>Honest</option><option>Calm</option>
+                        </select>
+                        <select class="trait-select" id="boy1trait2">
+                            <option>Cheater</option><option>Night Owl</option><option>Family Oriented</option>
+                            <option>Brave</option><option>Honest</option><option>Calm</option>
+                        </select>
+                        <select class="trait-select" id="boy1trait3">
+                            <option>Golden Retriever Boy</option><option>Sassy</option><option>Ai Reliant</option>
+                            <option>Brave</option><option>Honest</option><option>Calm</option>
+                        </select>
+                    </div>
+                    <div class="likes-group">
+                        <div class="section-title">💖 I like (pick 3)</div>
+                        <div class="checkbox-group" id="boy1likes">
+                            <label><input type="checkbox" value="Kind"> Clingy</label>
+                            <label><input type="checkbox" value="Funny"> Always Hungry</label>
+                            <label><input type="checkbox" value="Smart"> Spokening Dollar</label>
+                            <label><input type="checkbox" value="Brave"> Brave</label>
+                            <label><input type="checkbox" value="Honest"> Honest</label>
+                            <label><input type="checkbox" value="Calm"> Calm</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-card">
+                    <input type="text" id="boy2" placeholder="Name">
+                    <div class="profile-group">
+                        <label>👤 Avatar</label>
+                        <select class="profile-select" id="boy2profile">
+                            <option value="👦">👦 Boy</option>
+                            <option value="🐉">🐉 Dragon</option>
+                            <option value="🦁">🦁 Lion</option>
+                            <option value="🐺">🐺 Wolf</option>
+                            <option value="🦅">🦅 Eagle</option>
+                            <option value="🐻">🐻 Bear</option>
+                            <option value="🐍">🐍 Snake</option>
+                        </select>
+                    </div>
+                    <div class="personality-group">
+                        <label>🎭 My Traits (3)</label>
+                        <select class="trait-select" id="boy2trait1"><option>Kind</option><option>Cheater</option><option>Smart</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="boy2trait2"><option>Kind</option><option>Funny</option><option>Yapper</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="boy2trait3"><option>Kind</option><option>Funny</option><option>Smart</option><option>Family Oriented</option><option>Honest</option><option>Calm</option></select>
+                    </div>
+                    <div class="likes-group">
+                        <div class="section-title">💖 I like (pick 3)</div>
+                        <div class="checkbox-group" id="boy2likes">
+                            <label><input type="checkbox" value="Professional Eater"> Professional Eater</label>
+                            <label><input type="checkbox" value="Funny"> Funny</label>
+                            <label><input type="checkbox" value="Have Fur Babies"> Have Fur Babies</label>
+                            <label><input type="checkbox" value="Brave"> Brave</label>
+                            <label><input type="checkbox" value="Honest"> Honest</label>
+                            <label><input type="checkbox" value="Sneaky"> Sneaky</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-card">
+                    <input type="text" id="boy3" placeholder="Name">
+                    <div class="profile-group">
+                        <label>👤 Avatar</label>
+                        <select class="profile-select" id="boy3profile">
+                            <option value="👦">👦 Boy</option>
+                            <option value="🐉">🐉 Dragon</option>
+                            <option value="🦁">🦁 Lion</option>
+                            <option value="🐺">🐺 Wolf</option>
+                            <option value="🦅">🦅 Eagle</option>
+                            <option value="🐻">🐻 Bear</option>
+                            <option value="🐍">🐍 Snake</option>
+                        </select>
+                    </div>
+                    <div class="personality-group">
+                        <label>🎭 My Traits (3)</label>
+                        <select class="trait-select" id="boy3trait1"><option>Kind</option><option>Golden Retriever Boy</option><option>Smart</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="boy3trait2"><option>Kind</option><option>Funny</option><option>Smart</option><option>Sassy</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="boy3trait3"><option>Kind</option><option>Funny</option><option>Dancer</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                    </div>
+                    <div class="likes-group">
+                        <div class="section-title">💖 I like (pick 3)</div>
+                        <div class="checkbox-group" id="boy3likes">
+                            <label><input type="checkbox" value="Kind"> Kind</label>
+                            <label><input type="checkbox" value="High Maintenace"> High Maintenance</label>
+                            <label><input type="checkbox" value="Smart"> Smart</label>
+                            <label><input type="checkbox" value="Brave"> Brave</label>
+                            <label><input type="checkbox" value="Flat na Petite"> Flat na Petite</label>
+                            <label><input type="checkbox" value="Sneaky"> Sneaky</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GROUP B -->
+            <div class="glass-panel">
+                <h2>👧 Group B</h2>
+                <div class="user-card">
+                    <input type="text" id="girl1" placeholder="Name">
+                    <div class="profile-group">
+                        <label>👤 Avatar</label>
+                        <select class="profile-select" id="girl1profile">
+                            <option value="👧">👧 Girl</option>
+                            <option value="🦄">🦄 Unicorn</option>
+                            <option value="🐱">🐱 Cat</option>
+                            <option value="🦊">🦊 Fox</option>
+                            <option value="🐰">🐰 Bunny</option>
+                            <option value="🐝">🐝 Bee</option>
+                            <option value="🦋">🦋 Butterfly</option>
+                        </select>
+                    </div>
+                    <div class="personality-group">
+                        <label>🎭 My Traits (3)</label>
+                        <select class="trait-select" id="girl1trait1"><option>Spokening Dollar</option><option>Funny</option><option>Smart</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="girl1trait2"><option>Kind</option><option>Funny</option><option>High Maintenance</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="girl1trait3"><option>Kind</option><option>Funny</option><option>Smart</option><option>Brave</option><option>Flat na Petite</option><option>Calm</option></select>
+                    </div>
+                    <div class="likes-group">
+                        <div class="section-title">💖 I like (pick 3)</div>
+                        <div class="checkbox-group" id="girl1likes">
+                            <label><input type="checkbox" value="Golden Retriever Boy"> Golden Retriever Boy</label>
+                            <label><input type="checkbox" value="Funny"> Funny</label>
+                            <label><input type="checkbox" value="Dancer"> Dancer</label>
+                            <label><input type="checkbox" value="Brave"> Brave</label>
+                            <label><input type="checkbox" value="Night Owl"> Night Owl</label>
+                            <label><input type="checkbox" value="Calm"> Calm</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-card">
+                    <input type="text" id="girl2" placeholder="Name">
+                    <div class="profile-group">
+                        <label>👤 Avatar</label>
+                        <select class="profile-select" id="girl2profile">
+                            <option value="👧">👧 Girl</option>
+                            <option value="🦄">🦄 Unicorn</option>
+                            <option value="🐱">🐱 Cat</option>
+                            <option value="🦊">🦊 Fox</option>
+                            <option value="🐰">🐰 Bunny</option>
+                            <option value="🐝">🐝 Bee</option>
+                            <option value="🦋">🦋 Butterfly</option>
+                        </select>
+                    </div>
+                    <div class="personality-group">
+                        <label>🎭 My Traits (3)</label>
+                        <select class="trait-select" id="girl2trait1"><option>Kind</option><option>Professional Eater</option><option>Smart</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="girl2trait2"><option>Kind</option><option>Funny</option><option>Have Fur Babies</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="girl2trait3"><option>Kind</option><option>Funny</option><option>Smart</option><option>Gothe</option><option>Honest</option><option>Calm</option></select>
+                    </div>
+                    <div class="likes-group">
+                        <div class="section-title">💖 I like (pick 3)</div>
+                        <div class="checkbox-group" id="girl2likes">
+                            <label><input type="checkbox" value="Kind"> Kind</label>
+                            <label><input type="checkbox" value="Family Oriented"> Family Oriented</label>
+                            <label><input type="checkbox" value="Yapper"> Yapper</label>
+                            <label><input type="checkbox" value="Brave"> Brave</label>
+                            <label><input type="checkbox" value="Honest"> Honest</label>
+                            <label><input type="checkbox" value="Cheater"> Cheater</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-card">
+                    <input type="text" id="girl3" placeholder="Name">
+                    <div class="profile-group">
+                        <label>👤 Avatar</label>
+                        <select class="profile-select" id="girl3profile">
+                            <option value="👧">👧 Girl</option>
+                            <option value="🦄">🦄 Unicorn</option>
+                            <option value="🐱">🐱 Cat</option>
+                            <option value="🦊">🦊 Fox</option>
+                            <option value="🐰">🐰 Bunny</option>
+                            <option value="🐝">🐝 Bee</option>
+                            <option value="🦋">🦋 Butterfly</option>
+                        </select>
+                    </div>
+                    <div class="personality-group">
+                        <label>🎭 My Traits (3)</label>
+                        <select class="trait-select" id="girl3trait1"><option>Kind</option><option>Clingy</option><option>Smart</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="girl3trait2"><option>Kind</option><option>Funny</option><option>Always Hungry</option><option>Brave</option><option>Honest</option><option>Calm</option></select>
+                        <select class="trait-select" id="girl3trait3"><option>Kind</option><option>Funny</option><option>Smart</option><option>Sneaky</option><option>Honest</option><option>Calm</option></select>
+                    </div>
+                    <div class="likes-group">
+                        <div class="section-title">💖 I like (pick 3)</div>
+                        <div class="checkbox-group" id="girl3likes">
+                            <label><input type="checkbox" value="Kind"> Kind</label>
+                            <label><input type="checkbox" value="Cat LOver"> Cat LOver</label>
+                            <label><input type="checkbox" value="Smart"> Smart</label>
+                            <label><input type="checkbox" value="Night Owl"> Night Owl</label>
+                            <label><input type="checkbox" value="Honest"> Honest</label>
+                            <label><input type="checkbox" value="Sassy"> Sassy</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INFO PANEL -->
+            <div class="glass-panel">
+                <h2>🧠 Gale-Shapley</h2>
+                <p class="info-text">Each person selects personality traits and desired qualities. The system generates ranked preferences and finds stable matches.</p>
+                <div class="button-group">
+                    <button class="randomize-btn" onclick="randomizeAll()">🎲 Randomize</button>
+                    <button class="clear-btn" onclick="clearAll()">🗑️ Clear</button>
+                    <button class="breakdown-btn" onclick="showCompatibilityBreakdown()">📊 Breakdown</button>
+                </div>
+                <div style="margin: 12px 0;">
+                    <span class="tag">☕ Java Backend</span>
+                    <span class="tag">🔄 Stable Matching</span>
+                    <span class="tag">🎭 Personality-Based</span>
+                </div>
+                <button class="start-btn" onclick="saveData()">✨ Initialize Matching ✨</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div id="breakdownModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔍 Compatibility Breakdown</h2>
+            </div>
+            <div id="modalBody" class="modal-body">
+                Loading...
+            </div>
+            <div class="modal-footer">
+                <button class="modal-close" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
